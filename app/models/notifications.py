@@ -11,7 +11,7 @@ class Notification(Model):
         to='models.User',
         related_name="notifications",
         on_delete=fields.CASCADE,
-        index=True
+        db_index=True
     )
     type: str = fields.CharEnumField(
         NotificationType,

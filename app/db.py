@@ -1,5 +1,5 @@
 from tortoise import Tortoise
-import settings
+import app.settings as settings
 
 TORTOISE_MODELS = [
     "app.models.users",
