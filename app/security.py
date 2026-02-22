@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
-
 import jwt
 from passlib.context import CryptContext
 
@@ -12,7 +11,12 @@ TokenType = Literal["access", "refresh"]
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    if not isinstance(password, str):
+        raise TypeError(f"password must be str, got {type(password)!r}")
+    if len(password.encode("utf-8")) > 72:
+        raise ValueError(f"password too long (bytes={len(password.encode('utf-8'))})")
+    hash_password = pwd_context.hash(password)
+    return hash_password
 
 
 def verify_password(password: str, password_hash: str) -> bool:

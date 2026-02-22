@@ -16,6 +16,10 @@ class RefreshIn(BaseModel):
     refresh: str
 
 
+class RefreshRequest(BaseModel):
+    refresh: str
+
+
 # responses
 
 
@@ -27,10 +31,6 @@ class TokenPairResponse(BaseModel):
 class RegisterResponse(BaseModel):
     user_id: int
     access: str
-    refresh: str
-
-
-class RefreshRequest(BaseModel):
     refresh: str
 
 

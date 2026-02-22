@@ -1,3 +1,5 @@
+.PHONY: pytest rmcache dev lint mypy pre-commit-install pre-commit-run
+
 pytest:
 	./scripts/run_tests.sh
 
