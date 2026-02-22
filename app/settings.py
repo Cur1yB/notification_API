@@ -11,9 +11,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     JWT_SECRET: str
     JWT_ALG: str = "HS256"
-    ACCESS_TTL_SECONDS: int = 15 * 60 # min * sec
-    REFRESH_TTL_SECONDS: int = 7 * 24 * 60 * 60 # days * hours * min * sec
-    DEFAULT_AVATAR_URL: str = "#" # WASH ME
+    ACCESS_TTL_SECONDS: int = 15 * 60  # min * sec
+    REFRESH_TTL_SECONDS: int = 7 * 24 * 60 * 60  # days * hours * min * sec
+    DEFAULT_AVATAR_URL: str = "#"  # WASH ME
+    LOGLEVEL: str = "WARNING"
 
 
-settings = Settings()
+settings = Settings.model_validate({})

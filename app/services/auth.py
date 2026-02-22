@@ -1,10 +1,11 @@
 from app.settings import settings
-from app.services.users import get_by_username, create_user
+from app.db_services.users import get_by_username, create_user
 from app.exceptions import AuthError, UserAlreadyExists
 from app.security import create_token, hash_password, verify_password, decode_token
 import os
 import time
 import jwt
+
 
 async def register_user(*, username: str, password: str, settings) -> dict:
     existing = await get_by_username(username=username)
@@ -22,14 +23,14 @@ async def register_user(*, username: str, password: str, settings) -> dict:
         algorithm=settings.JWT_ALG,
         token_type="access",
         user_id=user.id,
-        expires_in_seconds=settings.ACCESS_TTL_SECONDS,
+        ttl_seconds=settings.ACCESS_TTL_SECONDS,
     )
     refresh = create_token(
         secret=settings.JWT_SECRET,
         algorithm=settings.JWT_ALG,
         token_type="refresh",
         user_id=user.id,
-        expires_in_seconds=settings.REFRESH_TTL_SECONDS,
+        ttl_seconds=settings.REFRESH_TTL_SECONDS,
     )
     return {"user_id": user.id, "access": access, "refresh": refresh}
 
@@ -47,14 +48,14 @@ async def login_user(*, username: str, password: str, settings) -> dict:
         algorithm=settings.JWT_ALG,
         token_type="access",
         user_id=user.id,
-        expires_in_seconds=settings.ACCESS_TTL_SECONDS,
+        ttl_seconds=settings.ACCESS_TTL_SECONDS,
     )
     refresh = create_token(
         secret=settings.JWT_SECRET,
         algorithm=settings.JWT_ALG,
         token_type="refresh",
         user_id=user.id,
-        expires_in_seconds=settings.REFRESH_TTL_SECONDS,
+        ttl_seconds=settings.REFRESH_TTL_SECONDS,
     )
     return {"access": access, "refresh": refresh}
 
@@ -76,17 +77,18 @@ async def refresh_access_token(*, refresh_token: str, settings) -> dict:
         algorithm=settings.JWT_ALG,
         token_type="access",
         user_id=user_id,
-        expires_in_seconds=settings.ACCESS_TTL_SECONDS,
+        ttl_seconds=settings.ACCESS_TTL_SECONDS,
     )
     return {"access": access}
+
 
 def _make_tokens(user_id: int) -> dict:
     secret = settings.JWT_SECRET
     alg = settings.JWT_ALG
 
     now = int(time.time())
-    access_ttl = int(os.environ.get("ACCESS_TTL_SECONDS", "900"))      # 15 min
-    refresh_ttl = int(os.environ.get("REFRESH_TTL_SECONDS", "604800")) # 7 days
+    access_ttl = int(os.environ.get("ACCESS_TTL_SECONDS", "900"))  # 15 min
+    refresh_ttl = int(os.environ.get("REFRESH_TTL_SECONDS", "604800"))  # 7 days
 
     access_payload = {
         "sub": str(user_id),

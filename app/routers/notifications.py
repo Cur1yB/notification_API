@@ -2,21 +2,38 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.dependencies.auth import get_current_user_id
 from app.exceptions import ForbiddenNotificationAccess
-from app.schemas.notification import NotificationCreateIn, NotificationOut
-from app.services.notifications import create_notification, delete_notification, list_notifications
+from app.schemas.notifications import NotificationCreateIn, NotificationOut
+from app.services.notifications import (
+    create_notification,
+    delete_notification,
+    list_notifications,
+)
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
-@router.post("/", response_model=NotificationOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=NotificationOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create notificaton",
+    description="Create notification for auth user.",
+)
 async def create_notification_ep(
     data: NotificationCreateIn,
     user_id: int = Depends(get_current_user_id),
 ):
-    return await create_notification(user_id=user_id, type_=data.type.value, text=data.text)
+    return await create_notification(
+        user_id=user_id, type_=data.type.value, text=data.text
+    )
 
 
-@router.get("/", response_model=list[NotificationOut])
+@router.get(
+    "/",
+    response_model=list[NotificationOut],
+    summary="List your notifications",
+    description="List notifications for current user. Pagination: limit/offset.",
+)
 async def list_notifications_ep(
     user_id: int = Depends(get_current_user_id),
     limit: int = Query(20, ge=1, le=100),
@@ -25,7 +42,12 @@ async def list_notifications_ep(
     return await list_notifications(user_id=user_id, limit=limit, offset=offset)
 
 
-@router.delete("/{notification_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{notification_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete your notification",
+    description="Delete auth user notification by id.",
+)
 async def delete_notification_ep(
     notification_id: int,
     user_id: int = Depends(get_current_user_id),

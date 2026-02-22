@@ -1,18 +1,30 @@
 from fastapi import APIRouter, HTTPException
 from app.settings import settings
-from app.schemas.auth import LoginIn, RefreshIn, RegisterIn
+from app.schemas.auth import (
+    LoginIn,
+    RefreshIn,
+    RegisterIn,
+    RegisterResponse,
+    TokenPairResponse,
+    AccessTokenResponse,
+)
 from app.services.auth import _make_tokens
 from app.exceptions import AuthError
 from app.models.users import User
 from app.security import create_token, decode_token, hash_password, verify_password
 from tortoise.exceptions import IntegrityError
-from jwt import InvalidTokenError 
+from jwt import InvalidTokenError
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register")
+@router.post(
+    "/register",
+    summary="Register new user",
+    response_model=RegisterResponse,
+    description="Create user and get JWT tokens. Username must be unique.",
+)
 async def register(data: RegisterIn):
     try:
         user = await User.create(
@@ -25,7 +37,12 @@ async def register(data: RegisterIn):
     return {"user_id": user.id, **_make_tokens(user.id)}
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    summary="Login",
+    response_model=TokenPairResponse,
+    description="Get new JWT tokens using username and password.",
+)
 async def login(data: LoginIn):
     user = await User.filter(username=data.username).first()
     if not user:
@@ -37,7 +54,12 @@ async def login(data: LoginIn):
     return _make_tokens(user.id)
 
 
-@router.post("/refresh")
+@router.post(
+    "/refresh",
+    summary="Refresh access token",
+    response_model=AccessTokenResponse,
+    description="Use refresh token for get new access token.",
+)
 async def refresh_ep(data: RefreshIn):
     try:
         payload = decode_token(

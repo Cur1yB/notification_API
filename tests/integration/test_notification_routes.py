@@ -1,7 +1,6 @@
 import pytest
 
 from app.models.notifications import Notification
-from app.models.users import User
 from app.security import create_token
 from app.settings import settings
 

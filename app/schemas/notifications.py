@@ -14,6 +14,5 @@ class NotificationOut(BaseModel):
     type: NotificationType
     text: str
     created_at: datetime
-
     username: str
     avatar_url: str
