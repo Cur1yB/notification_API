@@ -119,7 +119,9 @@ tests
 └── conftest.py
 scripts
 └── run_tests.sh
+Dockerfile
 docker-compose.test.yml
+docker-compose.yaml
 Makefile
 README.md
 package-lock.json
