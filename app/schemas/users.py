@@ -1,4 +1,3 @@
-# app/rest_models/users.py
 from pydantic import BaseModel, Field
 
 

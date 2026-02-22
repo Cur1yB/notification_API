@@ -2,40 +2,25 @@ import pytest
 
 from app.exceptions import AuthError, UserAlreadyExists
 from app.services.auth import register_user, login_user, refresh_access_token
-
-
-class DummySettings:
-    DEFAULT_AVATAR_URL = "https://example.com/a.png"
-    JWT_SECRET = "test-secret"
-    JWT_ALG = "HS256"
-    ACCESS_TTL_SECONDS = 60
-    REFRESH_TTL_SECONDS = 3600
-
-
-class DummyUser:
-    def __init__(self, user_id: int, username: str = "u", password_hash: str = "hash"):
-        self.id = user_id
-        self.username = username
-        self.password_hash = password_hash
-
+from tests.unit.dummies import DummyUser, DummySettings
 
 @pytest.mark.asyncio
 async def test_register_user_ok(monkeypatch):
     async def fake_get_by_username(*, username: str):
+        assert username == "pupalupa"
         return None
 
     async def fake_create_user(*, username: str, password_hash: str, avatar_url: str):
-        assert username == "alex"
+        assert username == "pupalupa"
         assert avatar_url == DummySettings.DEFAULT_AVATAR_URL
         assert password_hash == "HASHED"
         return DummyUser(1, username=username, password_hash=password_hash)
 
     def fake_hash_password(password: str) -> str:
-        assert password == "pass12345"
+        assert password == "PiPiSA"
         return "HASHED"
 
     def fake_create_token(**kwargs) -> str:
-        # return distinct tokens based on type
         return f"TOKEN-{kwargs['token_type']}-{kwargs['user_id']}"
 
     monkeypatch.setattr("app.services.auth.get_by_username", fake_get_by_username)
@@ -43,7 +28,7 @@ async def test_register_user_ok(monkeypatch):
     monkeypatch.setattr("app.services.auth.hash_password", fake_hash_password)
     monkeypatch.setattr("app.services.auth.create_token", fake_create_token)
 
-    res = await register_user(username="alex", password="pass12345", settings=DummySettings)
+    res = await register_user(username="pupalupa", password="PiPiSA", settings=DummySettings)
     assert res["user_id"] == 1
     assert res["access"] == "TOKEN-access-1"
     assert res["refresh"] == "TOKEN-refresh-1"
@@ -57,7 +42,7 @@ async def test_register_user_username_taken(monkeypatch):
     monkeypatch.setattr("app.services.auth.get_by_username", fake_get_by_username)
 
     with pytest.raises(UserAlreadyExists):
-        await register_user(username="alex", password="pass12345", settings=DummySettings)
+        await register_user(username="pupalupa", password="PiPiSA", settings=DummySettings)
 
 
 @pytest.mark.asyncio
@@ -66,7 +51,7 @@ async def test_login_user_ok(monkeypatch):
         return DummyUser(10, username=username, password_hash="HASHED")
 
     def fake_verify_password(password: str, password_hash: str) -> bool:
-        assert password == "pass12345"
+        assert password == "PiPiSA"
         assert password_hash == "HASHED"
         return True
 
@@ -77,7 +62,7 @@ async def test_login_user_ok(monkeypatch):
     monkeypatch.setattr("app.services.auth.verify_password", fake_verify_password)
     monkeypatch.setattr("app.services.auth.create_token", fake_create_token)
 
-    res = await login_user(username="alex", password="pass12345", settings=DummySettings)
+    res = await login_user(username="pupalupa", password="PiPiSA", settings=DummySettings)
     assert res["access"] == "TOKEN-access-10"
     assert res["refresh"] == "TOKEN-refresh-10"
 
@@ -90,7 +75,7 @@ async def test_login_user_invalid_username(monkeypatch):
     monkeypatch.setattr("app.services.auth.get_by_username", fake_get_by_username)
 
     with pytest.raises(AuthError):
-        await login_user(username="alex", password="pass12345", settings=DummySettings)
+        await login_user(username="pupalupa", password="PiPiSA", settings=DummySettings)
 
 
 @pytest.mark.asyncio
@@ -105,7 +90,7 @@ async def test_login_user_invalid_password(monkeypatch):
     monkeypatch.setattr("app.services.auth.verify_password", fake_verify_password)
 
     with pytest.raises(AuthError):
-        await login_user(username="alex", password="wrong", settings=DummySettings)
+        await login_user(username="pupalupa", password="mydickisverybig", settings=DummySettings)
 
 
 @pytest.mark.asyncio

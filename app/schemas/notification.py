@@ -1,14 +1,6 @@
-# app/schemas/notifications.py
 from datetime import datetime
-from enum import Enum
-
+from app.models.enums import NotificationType
 from pydantic import BaseModel, Field
-
-
-class NotificationType(str, Enum):
-    like = "like"
-    comment = "comment"
-    repost = "repost"
 
 
 class NotificationCreateIn(BaseModel):

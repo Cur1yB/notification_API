@@ -8,3 +8,6 @@ class AuthError(AppError):
 
 class UserAlreadyExists(AppError):
     pass
+
+class ForbiddenNotificationAccess(Exception):
+    pass

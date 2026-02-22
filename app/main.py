@@ -1,22 +1,23 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
+from app.settings import settings
 from app.db import (
-    init_db,
-    close_db
+    TORTOISE_MODELS
+    
 )
 from app.routers.auth import router as auth_router
 from app.routers.notifications import router as notifications_router
-
+from tortoise.contrib.fastapi import register_tortoise
 
 app = FastAPI()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await init_db()
-    yield
-    await close_db()
-
-app = FastAPI(lifespan=lifespan)
-
 app.include_router(notifications_router)
 app.include_router(auth_router)
+
+register_tortoise(
+    app,
+    db_url=settings.DATABASE_URL,
+    modules={"models": TORTOISE_MODELS},
+    generate_schemas=True,
+    add_exception_handlers=True,
+)

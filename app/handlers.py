@@ -1,9 +1,8 @@
-# app/handlers.py
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import jwt
 
-from app.exceptions import AuthError, UserAlreadyExists
+from app.exceptions import AuthError, UserAlreadyExists, ForbiddenNotificationAccess
 
 
 def init_exception_handlers(app: FastAPI) -> None:
@@ -22,3 +21,7 @@ def init_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(jwt.InvalidTokenError)
     async def jwt_invalid_handler(request: Request, exc: jwt.InvalidTokenError):
         return JSONResponse(status_code=401, content={"detail": "Invalid token"})
+    
+    @app.exception_handler(ForbiddenNotificationAccess)
+    async def forbidden_notification_access_handler(request: Request, exc: ForbiddenNotificationAccess):
+        return JSONResponse(status_code=403, content={"detail": "Forbidden"})

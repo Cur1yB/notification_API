@@ -5,6 +5,8 @@ from tortoise import Tortoise
 from app.main import app
 from dotenv import load_dotenv
 
+from app.models.users import User
+
 load_dotenv()
 
 
@@ -31,9 +33,6 @@ async def init_test_db():
 
 @pytest_asyncio.fixture(autouse=True)
 async def clean_db():
-    """
-    Clean tables between tests (simple approach).
-    """
     from app.models.notifications import Notification
     from app.models.users import User
 
@@ -41,9 +40,24 @@ async def clean_db():
     await User.all().delete()
     yield
 
+@pytest_asyncio.fixture
+async def user():
+    u = await User.create(username="pupalupa", password_hash="pupahash")
+    yield u
+    await u.delete()
+
+@pytest_asyncio.fixture
+async def other_user():
+    u = await User.create(username="PiPiSA", password_hash="lupapupa")
+    yield u
+    await u.delete()
 
 @pytest_asyncio.fixture
 async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+
+

@@ -1,4 +1,5 @@
-from app.services.db_services.users import get_by_username, create_user
+from app.settings import settings
+from app.services.users import get_by_username, create_user
 from app.exceptions import AuthError, UserAlreadyExists
 from app.security import create_token, hash_password, verify_password, decode_token
 import os
@@ -80,8 +81,8 @@ async def refresh_access_token(*, refresh_token: str, settings) -> dict:
     return {"access": access}
 
 def _make_tokens(user_id: int) -> dict:
-    secret = os.environ["JWT_SECRET"]
-    alg = os.environ.get("JWT_ALG", "HS256")
+    secret = settings.JWT_SECRET
+    alg = settings.JWT_ALG
 
     now = int(time.time())
     access_ttl = int(os.environ.get("ACCESS_TTL_SECONDS", "900"))      # 15 min
