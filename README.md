@@ -3,6 +3,11 @@
 FastAPI + Tortoise ORM + Postgres.
 JWT authentication.
 CRUD operations for notifications available only for current user.
+
+## Deploy link
+
+[Render](https://notification-api-0ggu.onrender.com/)
+
 ## Run
 
 Rename `.env.example` to `.env` and fill required environment variables.
