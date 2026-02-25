@@ -12,6 +12,7 @@ load_dotenv()
 
 TEST_DB_URL = os.getenv("TEST_DATABASE_URL")
 
+
 @pytest_asyncio.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
@@ -40,11 +41,13 @@ async def clean_db():
     await User.all().delete()
     yield
 
+
 @pytest_asyncio.fixture
 async def user():
     u = await User.create(username="pupalupa", password_hash="pupahash")
     yield u
     await u.delete()
+
 
 @pytest_asyncio.fixture
 async def other_user():
@@ -52,12 +55,9 @@ async def other_user():
     yield u
     await u.delete()
 
+
 @pytest_asyncio.fixture
 async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
-
-
-
-

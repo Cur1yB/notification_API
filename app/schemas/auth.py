@@ -21,8 +21,6 @@ class RefreshRequest(BaseModel):
 
 
 # responses
-
-
 class TokenPairResponse(BaseModel):
     access: str
     refresh: str

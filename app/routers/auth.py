@@ -8,11 +8,8 @@ from app.schemas.auth import (
     TokenPairResponse,
     AccessTokenResponse,
 )
-from app.services.auth import _make_tokens
-from app.exceptions import AuthError
-from app.models.users import User
-from app.security import create_token, decode_token, hash_password, verify_password
-from tortoise.exceptions import IntegrityError
+from app.services.auth import login_user, refresh_access_token, register_user
+from app.exceptions import AuthError, UserAlreadyExists
 from jwt import InvalidTokenError
 
 
@@ -27,14 +24,12 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 )
 async def register(data: RegisterIn):
     try:
-        user = await User.create(
-            username=data.username,
-            password_hash=hash_password(data.password),
+        user = await register_user(
+            username=data.username, password=data.password, settings=settings
         )
-    except IntegrityError:
+    except UserAlreadyExists:
         raise HTTPException(status_code=409, detail="Username already taken")
-
-    return {"user_id": user.id, **_make_tokens(user.id)}
+    return user
 
 
 @router.post(
@@ -44,14 +39,14 @@ async def register(data: RegisterIn):
     description="Get new JWT tokens using username and password.",
 )
 async def login(data: LoginIn):
-    user = await User.filter(username=data.username).first()
-    if not user:
+    try:
+        user = await login_user(
+            username=data.username, password=data.password, settings=settings
+        )
+    except AuthError:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    if not verify_password(data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    return _make_tokens(user.id)
+    return user
 
 
 @router.post(
@@ -60,24 +55,11 @@ async def login(data: LoginIn):
     response_model=AccessTokenResponse,
     description="Use refresh token for get new access token.",
 )
-async def refresh_ep(data: RefreshIn):
+async def refresh(data: RefreshIn):
     try:
-        payload = decode_token(
-            token=data.refresh,
-            secret=settings.JWT_SECRET,
-            algorithm=settings.JWT_ALG,
+        new_access = await refresh_access_token(
+            refresh_token=data.refresh, settings=settings
         )
-        if payload.get("type") != "refresh":
-            raise AuthError("Wrong token type")
-
-        user_id = int(payload["sub"])
-        new_access = create_token(
-            user_id=user_id,
-            token_type="access",
-            secret=settings.JWT_SECRET,
-            algorithm=settings.JWT_ALG,
-            ttl_seconds=settings.ACCESS_TTL_SECONDS,
-        )
-        return {"access": new_access}
+        return new_access
     except (AuthError, InvalidTokenError, KeyError, ValueError):
         raise HTTPException(status_code=401, detail="Invalid token")
